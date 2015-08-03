@@ -42,7 +42,7 @@ static void put_loop(GIF *gif, uint16_t loop);
 GIF *
 new_gif(
     const char *fname, uint16_t width, uint16_t height,
-    uint8_t *gct, int depth, int loop
+    uint8_t *palette, int depth, int loop
 )
 {
     GIF *gif = calloc(1, sizeof(*gif) + 2*width*height);
@@ -50,8 +50,8 @@ new_gif(
         goto no_gif;
     gif->w = width; gif->h = height;
     gif->depth = depth > 1 ? depth : 2;
-    gif->cur = (uint8_t *) &gif[1];
-    gif->old = &gif->cur[width*height];
+    gif->frame = (uint8_t *) &gif[1];
+    gif->back = &gif->frame[width*height];
     gif->fd = creat(fname, 0666);
     if (gif->fd == -1)
         goto no_fd;
@@ -59,7 +59,7 @@ new_gif(
     write_num(gif->fd, width);
     write_num(gif->fd, height);
     write(gif->fd, (uint8_t []) {0xF0 | (depth-1), 0x00, 0x00}, 3);
-    write(gif->fd, gct, 3 << depth);
+    write(gif->fd, palette, 3 << depth);
     if (loop >= 0 && loop <= 0xFFFF)
         put_loop(gif, (uint16_t) loop);
     return gif;
@@ -138,7 +138,7 @@ put_image(GIF *gif, uint16_t w, uint16_t h, uint16_t x, uint16_t y)
     put_key(gif, degree, key_size); /* clear code */
     for (i = y; i < y+h; i++) {
         for (j = x; j < x+w; j++) {
-            uint8_t pixel = gif->cur[i*gif->w+j] & (degree - 1);
+            uint8_t pixel = gif->frame[i*gif->w+j] & (degree - 1);
             child = node->children[pixel];
             if (child) {
                 node = child;
@@ -169,7 +169,7 @@ get_bbox(GIF *gif, uint16_t *w, uint16_t *h, uint16_t *x, uint16_t *y)
     k = 0;
     for (i = 0; i < gif->h; i++) {
         for (j = 0; j < gif->w; j++, k++) {
-            if (gif->cur[k] != gif->old[k]) {
+            if (gif->frame[k] != gif->back[k]) {
                 if (j < left)   left    = j;
                 if (j > right)  right   = j;
                 if (i < top)    top     = i;
@@ -214,9 +214,9 @@ add_frame(GIF *gif, uint16_t delay)
     }
     put_image(gif, w, h, x, y);
     gif->nframes++;
-    tmp = gif->old;
-    gif->old = gif->cur;
-    gif->cur = tmp;
+    tmp = gif->back;
+    gif->back = gif->frame;
+    gif->frame = tmp;
 }
 
 void
@@ -250,7 +250,7 @@ main()
     /* draw some frames */
     for (i = 0; i < 4*6/3; i++) {
         for (j = 0; j < w*h; j++)
-            gif->cur[j] = (i*3 + j) / 6 % 4;
+            gif->frame[j] = (i*3 + j) / 6 % 4;
         add_frame(gif, 10);
     }
     /* remember to close the GIF */
