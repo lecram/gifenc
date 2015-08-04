@@ -40,7 +40,7 @@ typedef struct Node Node;
 static Node *
 new_node(uint16_t key, int degree)
 {
-    Node *node = calloc(1, sizeof(*node) + sizeof(Node *[degree]));
+    Node *node = calloc(1, sizeof(*node) + degree * sizeof(Node *));
     if (node)
         node->key = key;
     return node;
