@@ -12,6 +12,25 @@
 /* helper to write a little-endian 16-bit number portably */
 #define write_num(fd, n) write((fd), (uint8_t []) {(n) & 0xFF, (n) >> 8}, 2)
 
+static uint8_t vga[0x30] = {
+    0x00, 0x00, 0x00,
+    0xAA, 0x00, 0x00,
+    0x00, 0xAA, 0x00,
+    0xAA, 0x55, 0x00,
+    0x00, 0x00, 0xAA,
+    0xAA, 0x00, 0xAA,
+    0x00, 0xAA, 0xAA,
+    0xAA, 0xAA, 0xAA,
+    0x55, 0x55, 0x55,
+    0xFF, 0x55, 0x55,
+    0x55, 0xFF, 0x55,
+    0xFF, 0xFF, 0x55,
+    0x55, 0x55, 0xFF,
+    0xFF, 0x55, 0xFF,
+    0x55, 0xFF, 0xFF,
+    0xFF, 0xFF, 0xFF,
+};
+
 struct Node {
     uint16_t key;
     struct Node *children[];
@@ -45,6 +64,7 @@ new_gif(
     uint8_t *palette, int depth, int loop
 )
 {
+    int i, r, g, b, v;
     GIF *gif = calloc(1, sizeof(*gif) + 2*width*height);
     if (!gif)
         goto no_gif;
@@ -59,7 +79,28 @@ new_gif(
     write_num(gif->fd, width);
     write_num(gif->fd, height);
     write(gif->fd, (uint8_t []) {0xF0 | (depth-1), 0x00, 0x00}, 3);
-    write(gif->fd, palette, 3 << depth);
+    if (palette) {
+        write(gif->fd, palette, 3 << depth);
+    } else if (depth <= 4) {
+        write(gif->fd, vga, 3 << depth);
+    } else {
+        write(gif->fd, vga, sizeof(vga));
+        i = sizeof(vga);
+        for (r = 0; r < 6; r++) {
+            for (g = 0; g < 6; g++) {
+                for (b = 0; b < 6; b++) {
+                    write(gif->fd, (uint8_t []) {r*51, g*51, b*51}, 3);
+                    if (++i == 1 << depth)
+                        goto done_gct;
+                }
+            }
+        }
+        for (i = 1; i <= 24; i++) {
+            v = i * 0xFF / 25;
+            write(gif->fd, (uint8_t []) {v, v, v}, 3);
+        }
+    }
+done_gct:
     if (loop >= 0 && loop <= 0xFFFF)
         put_loop(gif, (uint16_t) loop);
     return gif;

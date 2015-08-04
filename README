@@ -51,6 +51,12 @@ palette. The number of color entries must be 2 ^ depth, where 1 <= depth <= 8.
     };
     int depth = 2;          /* palette has 1 << 2 (i.e. 4) entries */
 
+If `palette` is NULL,  entries are taken from a default table  of 256 colors. If
+`depth` < 8,  the default table will  be truncated to the  appropriate size. The
+default table is composed  of the 16 standard VGA colors,  plus the 216 web-safe
+colors (all combinations of  RGB with only 6 valid values  per channel), plus 24
+grey colors equally spaced between black and white, excluding both.
+
 If the `loop` parameter is zero, the resulting GIF will loop forever. If it is a
 positive number, the  animation will be played that nuumber  of times. If `loop`
 is negative,  no looping  information is stored  in the GIF  file (for  most GIF
