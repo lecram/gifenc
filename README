@@ -43,6 +43,8 @@ The `palette` parameter  must point to an  array of color data. Each  entry is a
 The  `depth` parameter  specifies  how  many colors  are  present  in the  given
 palette. The number of color entries must be 2 ^ depth, where 1 <= depth <= 8.
 
+Example `palette` and `depth` values:
+
     uint8_t palette[] = {
         0x00, 0x00, 0x00,   /* entry 0: black */
         0xFF, 0xFF, 0xFF,   /* entry 1: white */
@@ -58,7 +60,7 @@ colors (all combinations of  RGB with only 6 valid values  per channel), plus 24
 grey colors equally spaced between black and white, excluding both.
 
 If the `loop` parameter is zero, the resulting GIF will loop forever. If it is a
-positive number, the  animation will be played that nuumber  of times. If `loop`
+positive number, the  animation will  be played that number  of times. If `loop`
 is negative,  no looping  information is stored  in the GIF  file (for  most GIF
 viewers, this is equivalent to `loop` == 1, i.e., "play once").
 
@@ -71,7 +73,8 @@ The `delay` parameter  specifies how long the frame will  be shown, in hundreths
 of a second. For example, `delay` ==  100 means "show this frame for one second"
 and `delay` == 25  means "show this frame for a quarter of  a second". Note that
 short delays may not be supported by  some GIF viewers: it's recommended to keep
-a minimum of `delay` == 6.
+a minimum of `delay` == 6. If `delay` == 0, no delay information  will be stored
+for the frame. This can be used when creating still (single-frame) GIF images.
 
 Pixel data is read from `gif->frame`, which points to a memory block like this:
 
@@ -80,7 +83,7 @@ Pixel data is read from `gif->frame`, which points to a memory block like this:
 Note that the address of `gif->frame`  changes between calls to add_frame() (*).
 For this  reason, each  frame must  be written  in its  entirety to  the current
 address, even if one only wants to change  a few pixels from the last frame. The
-encoder will automatically detect the  diferrence between two consecutive frames
+encoder will automatically detect the  difference between two consecutive frames
 in order to minimize the size of the output.
 
 Each byte in the frame buffer represents a  pixel. The value of each pixel is an
@@ -96,9 +99,9 @@ create a frame displaying a red-on-black "F" letter like this:
         2, 0, 0, 0,
         2, 0, 0, 0
     };
-    GIF *gif = new_gif("E.gif", 4, 7, palette, depth, loop);
+    GIF *gif = new_gif("F.gif", 4, 7, palette, depth, loop);
     memcpy(gif->frame, pixels, sizeof(pixels));
-    add_frame(gif, delay);
+    add_frame(gif, 0);
     close_gif(gif);
 
 The function close_gif() finishes writting GIF  data to the file associated with
