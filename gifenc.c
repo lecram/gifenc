@@ -85,7 +85,7 @@ new_gif(
         write(gif->fd, vga, 3 << depth);
     } else {
         write(gif->fd, vga, sizeof(vga));
-        i = sizeof(vga);
+        i = 0x10;
         for (r = 0; r < 6; r++) {
             for (g = 0; g < 6; g++) {
                 for (b = 0; b < 6; b++) {
