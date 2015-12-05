@@ -1,3 +1,8 @@
+#ifndef GIFENC_H
+#define GIFENC_H
+
+#include <stdint.h>
+
 typedef struct GIF {
     uint16_t w, h;
     int depth;
@@ -15,3 +20,5 @@ GIF *new_gif(
 );
 void add_frame(GIF *gif, uint16_t delay);
 void close_gif(GIF* gif);
+
+#endif /* GIFENC_H */

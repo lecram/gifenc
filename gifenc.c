@@ -1,3 +1,5 @@
+#include "gifenc.h"
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -5,9 +7,6 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <unistd.h>
-#include <stdint.h>
-
-#include "gifenc.h"
 
 /* helper to write a little-endian 16-bit number portably */
 #define write_num(fd, n) write((fd), (uint8_t []) {(n) & 0xFF, (n) >> 8}, 2)
