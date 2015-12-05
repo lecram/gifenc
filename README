@@ -116,6 +116,17 @@ size  optimization. The  address of  `gif->frame` alternates  between those  two
 buffers after each call to add_frame().
 
 
+Example
+-------
+
+See the file "example.c". It can be tested like this:
+
+$ cc -o example gifenc.c example.c
+$ ./example
+
+That should create a GIF named "example.gif".
+
+
 Copying
 -------
 
