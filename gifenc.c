@@ -6,7 +6,11 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
+#ifdef _WIN32
+#include <io.h>
+#else
 #include <unistd.h>
+#endif
 
 /* helper to write a little-endian 16-bit number portably */
 #define write_num(fd, n) write((fd), (uint8_t []) {(n) & 0xFF, (n) >> 8}, 2)
@@ -74,6 +78,9 @@ new_gif(
     gif->fd = creat(fname, 0666);
     if (gif->fd == -1)
         goto no_fd;
+#ifdef _WIN32
+    setmode(gif->fd, O_BINARY);
+#endif
     write(gif->fd, "GIF89a", 6);
     write_num(gif->fd, width);
     write_num(gif->fd, height);
