@@ -1,7 +1,7 @@
 GIF encoder
 ===========
 
-This is a small C99 library that can be used to create GIF animations.
+This is a small C library that can be used to create GIF animations.
 
 Features
 --------
@@ -18,7 +18,7 @@ Limitations
 -----------
 
   * no frame-local palettes (incompatible with size optimization)
-  * no interlacing
+  * no interlacing (bad for compression, useless for animations)
 
 
 Documentation
@@ -87,7 +87,7 @@ encoder will automatically detect the  difference between two consecutive frames
 in order to minimize the size of the output.
 
 Each byte in the frame buffer represents a  pixel. The value of each pixel is an
-index to a palette  entry. For example, given the example  palette above, we can
+index to a palette entry. For instance, given the example  palette above, we can
 create a frame displaying a red-on-black "F" letter like this:
 
     uint8_t pixels[] = {
@@ -99,7 +99,7 @@ create a frame displaying a red-on-black "F" letter like this:
         2, 0, 0, 0,
         2, 0, 0, 0
     };
-    GIF *gif = new_gif("F.gif", 4, 7, palette, depth, loop);
+    GIF *gif = new_gif("F.gif", 4, 7, palette, depth, -1);
     memcpy(gif->frame, pixels, sizeof(pixels));
     add_frame(gif, 0);
     close_gif(gif);
@@ -124,7 +124,7 @@ See the file "example.c". It can be tested like this:
 $ cc -o example gifenc.c example.c
 $ ./example
 
-That should create a GIF named "example.gif".
+That should create an animated GIF named "example.gif".
 
 
 Copying
