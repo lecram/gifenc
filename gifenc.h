@@ -3,7 +3,7 @@
 
 #include <stdint.h>
 
-typedef struct GIF {
+typedef struct ge_GIF {
     uint16_t w, h;
     int depth;
     int fd;
@@ -12,13 +12,13 @@ typedef struct GIF {
     uint8_t *frame, *back;
     uint32_t partial;
     uint8_t buffer[0xFF];
-} GIF;
+} ge_GIF;
 
-GIF *new_gif(
+ge_GIF *ge_new_gif(
     const char *fname, uint16_t width, uint16_t height,
     uint8_t *palette, int depth, int loop
 );
-void add_frame(GIF *gif, uint16_t delay);
-void close_gif(GIF* gif);
+void ge_add_frame(ge_GIF *gif, uint16_t delay);
+void ge_close_gif(ge_GIF* gif);
 
 #endif /* GIFENC_H */

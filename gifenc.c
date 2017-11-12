@@ -59,16 +59,16 @@ del_trie(Node *root, int degree)
     free(root);
 }
 
-static void put_loop(GIF *gif, uint16_t loop);
+static void put_loop(ge_GIF *gif, uint16_t loop);
 
-GIF *
-new_gif(
+ge_GIF *
+ge_new_gif(
     const char *fname, uint16_t width, uint16_t height,
     uint8_t *palette, int depth, int loop
 )
 {
     int i, r, g, b, v;
-    GIF *gif = calloc(1, sizeof(*gif) + 2*width*height);
+    ge_GIF *gif = calloc(1, sizeof(*gif) + 2*width*height);
     if (!gif)
         goto no_gif;
     gif->w = width; gif->h = height;
@@ -117,7 +117,7 @@ no_gif:
 }
 
 static void
-put_loop(GIF *gif, uint16_t loop)
+put_loop(ge_GIF *gif, uint16_t loop)
 {
     write(gif->fd, (uint8_t []) {'!', 0xFF, 0x0B}, 3);
     write(gif->fd, "NETSCAPE2.0", 11);
@@ -130,7 +130,7 @@ put_loop(GIF *gif, uint16_t loop)
  *   gif->offset holds position to put next *bit*
  *   gif->partial holds bits to include in next byte */
 static void
-put_key(GIF *gif, uint16_t key, int key_size)
+put_key(ge_GIF *gif, uint16_t key, int key_size)
 {
     int byte_offset, bit_offset, bits_to_write;
     byte_offset = gif->offset / 8;
@@ -151,7 +151,7 @@ put_key(GIF *gif, uint16_t key, int key_size)
 }
 
 static void
-end_key(GIF *gif)
+end_key(ge_GIF *gif)
 {
     int byte_offset;
     byte_offset = gif->offset / 8;
@@ -163,7 +163,7 @@ end_key(GIF *gif)
 }
 
 static void
-put_image(GIF *gif, uint16_t w, uint16_t h, uint16_t x, uint16_t y)
+put_image(ge_GIF *gif, uint16_t w, uint16_t h, uint16_t x, uint16_t y)
 {
     int nkeys, key_size, i, j;
     Node *node, *child, *root;
@@ -207,7 +207,7 @@ put_image(GIF *gif, uint16_t w, uint16_t h, uint16_t x, uint16_t y)
 }
 
 static int
-get_bbox(GIF *gif, uint16_t *w, uint16_t *h, uint16_t *x, uint16_t *y)
+get_bbox(ge_GIF *gif, uint16_t *w, uint16_t *h, uint16_t *x, uint16_t *y)
 {
     int i, j, k;
     int left, right, top, bottom;
@@ -235,7 +235,7 @@ get_bbox(GIF *gif, uint16_t *w, uint16_t *h, uint16_t *x, uint16_t *y)
 }
 
 static void
-set_delay(GIF *gif, uint16_t d)
+set_delay(ge_GIF *gif, uint16_t d)
 {
     write(gif->fd, (uint8_t []) {'!', 0xF9, 0x04, 0x04}, 4);
     write_num(gif->fd, d);
@@ -243,7 +243,7 @@ set_delay(GIF *gif, uint16_t d)
 }
 
 void
-add_frame(GIF *gif, uint16_t delay)
+ge_add_frame(ge_GIF *gif, uint16_t delay)
 {
     uint16_t w, h, x, y;
     uint8_t *tmp;
@@ -267,7 +267,7 @@ add_frame(GIF *gif, uint16_t delay)
 }
 
 void
-close_gif(GIF* gif)
+ge_close_gif(ge_GIF* gif)
 {
     write(gif->fd, ";", 1);
     close(gif->fd);

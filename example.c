@@ -7,7 +7,7 @@ main()
     int w = 120, h = 90;
 
     /* create a GIF */
-    GIF *gif = new_gif(
+    ge_GIF *gif = ge_new_gif(
         "example.gif",  /* file name */
         w, h,           /* canvas size */
         (uint8_t []) {  /* palette */
@@ -23,9 +23,9 @@ main()
     for (i = 0; i < 4*6/3; i++) {
         for (j = 0; j < w*h; j++)
             gif->frame[j] = (i*3 + j) / 6 % 4;
-        add_frame(gif, 10);
+        ge_add_frame(gif, 10);
     }
     /* remember to close the GIF */
-    close_gif(gif);
+    ge_close_gif(gif);
     return 0;
 }

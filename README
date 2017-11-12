@@ -24,12 +24,13 @@ Limitations
 Documentation
 -------------
 
-There are  only three functions  declared in "gifenc.h":  new_gif(), add_frame()
-and close_gif().
+There   are  only   three  functions   declared  in   "gifenc.h":  ge_new_gif(),
+ge_add_frame() and ge_close_gif().
 
-The new_gif() function receives GIF global options and returns a GIF handler:
+The  ge_new_gif() function  receives GIF  global  options and  returns a  ge_GIF
+handler:
 
-    GIF *new_gif(
+    ge_GIF *ge_new_gif(
         const char *fname,                  /* GIF file name */
         uint16_t width, uint16_t height,    /* frame size */
         uint8_t *palette, int depth,        /* color table */
@@ -64,10 +65,10 @@ positive number, the  animation will  be played that number  of times. If `loop`
 is negative,  no looping  information is stored  in the GIF  file (for  most GIF
 viewers, this is equivalent to `loop` == 1, i.e., "play once").
 
-The add_frame() function reads pixel data  from a buffer and saves the resulting
-frame to the file associated with the given GIF handler:
+The  ge_add_frame() function  reads  pixel  data from  a  buffer  and saves  the
+resulting frame to the file associated with the given ge_GIF handler:
 
-    void add_frame(GIF *gif, uint16_t delay);
+    void ge_add_frame(ge_GIF *gif, uint16_t delay);
 
 The `delay` parameter  specifies how long the frame will  be shown, in hundreths
 of a second. For example, `delay` ==  100 means "show this frame for one second"
@@ -80,8 +81,8 @@ Pixel data is read from `gif->frame`, which points to a memory block like this:
 
     uint8_t _frame_[gif->width * gif->height];
 
-Note that the address of `gif->frame`  changes between calls to add_frame() (*).
-For this  reason, each  frame must  be written  in its  entirety to  the current
+Note that  the address of  `gif->frame` changes between calls  to ge_add_frame()
+(*). For this reason, each frame must  be written in its entirety to the current
 address, even if one only wants to change  a few pixels from the last frame. The
 encoder will automatically detect the  difference between two consecutive frames
 in order to minimize the size of the output.
@@ -99,21 +100,22 @@ create a frame displaying a red-on-black "F" letter like this:
         2, 0, 0, 0,
         2, 0, 0, 0
     };
-    GIF *gif = new_gif("F.gif", 4, 7, palette, depth, -1);
+    ge_GIF *gif = ge_new_gif("F.gif", 4, 7, palette, depth, -1);
     memcpy(gif->frame, pixels, sizeof(pixels));
-    add_frame(gif, 0);
-    close_gif(gif);
+    ge_add_frame(gif, 0);
+    ge_close_gif(gif);
 
-The function close_gif() finishes writting GIF  data to the file associated with
-the given GIF handle and does memory clean-up. This function must be called once
-after all  desired frames have  been added, in order  to correctly save  the GIF
-file. After calling this function, the GIF handler cannot be used anymore.
+The function  ge_close_gif() finishes writting  GIF data to the  file associated
+with the  given ge_GIF handler and  does memory clean-up. This  function must be
+called once after all desired frames have been added, in order to correctly save
+the GIF  file. After calling  this function, the  ge_GIF handler cannot  be used
+anymore.
 
-    void close_gif(GIF* gif);
+    void ge_close_gif(ge_GIF* gif);
 
 (*) The  encoder keeps two frame  buffers internally, in order  to implement the
 size  optimization. The  address of  `gif->frame` alternates  between those  two
-buffers after each call to add_frame().
+buffers after each call to ge_add_frame().
 
 
 Example
