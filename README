@@ -12,6 +12,7 @@ Features
   * GIF size optimization: only stores frame differences
   * memory efficient: saves frames to file as soon as possible
   * small and portable: less than 300 lines of C99
+  * public domain
 
 
 Limitations
