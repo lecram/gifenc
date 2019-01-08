@@ -86,7 +86,7 @@ ge_new_gif(
     gif->depth = depth > 1 ? depth : 2;
     gif->frame = (uint8_t *) &gif[1];
     gif->back = &gif->frame[width*height];
-    gif->fd = open(fname, 0666);
+    gif->fd = fileno(fopen(fname, "w");
     if (gif->fd == -1)
         goto no_fd;
 #ifdef _WIN32
