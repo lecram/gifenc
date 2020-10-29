@@ -86,7 +86,11 @@ ge_new_gif(
     gif->depth = depth > 1 ? depth : 2;
     gif->frame = (uint8_t *) &gif[1];
     gif->back = &gif->frame[width*height];
+#ifdef _WIN32
+    gif->fd = creat(fname, S_IWRITE);
+#else
     gif->fd = creat(fname, 0666);
+#endif
     if (gif->fd == -1)
         goto no_fd;
 #ifdef _WIN32
