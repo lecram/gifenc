@@ -3,6 +3,10 @@
 
 #include <stdint.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 typedef struct ge_GIF {
     uint16_t w, h;
     int depth;
@@ -21,4 +25,7 @@ ge_GIF *ge_new_gif(
 void ge_add_frame(ge_GIF *gif, uint16_t delay);
 void ge_close_gif(ge_GIF* gif);
 
+#ifdef __cplusplus
+}
+#endif
 #endif /* GIFENC_H */
