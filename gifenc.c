@@ -172,8 +172,10 @@ end_key(ge_GIF *gif)
     byte_offset = gif->offset / 8;
     if (gif->offset % 8)
         gif->buffer[byte_offset++] = gif->partial & 0xFF;
-    write(gif->fd, (uint8_t []) {byte_offset}, 1);
-    write(gif->fd, gif->buffer, byte_offset);
+    if (byte_offset) {
+        write(gif->fd, (uint8_t []) {byte_offset}, 1);
+        write(gif->fd, gif->buffer, byte_offset);
+    }
     write(gif->fd, "\0", 1);
     gif->offset = gif->partial = 0;
 }
