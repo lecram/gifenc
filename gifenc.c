@@ -70,6 +70,15 @@ del_trie(Node *root, int degree)
     free(root);
 }
 
+#define write_and_store(s, dst, fd, src, n) \
+do { \
+    write(fd, src, n); \
+    if (s) { \
+        memcpy(dst, src, n); \
+        dst += n; \
+    } \
+} while (0);
+
 static void put_loop(ge_GIF *gif, uint16_t loop);
 
 ge_GIF *
@@ -79,11 +88,11 @@ ge_new_gif(
 )
 {
     int i, r, g, b, v;
+    int store_gct, custom_gct;
     ge_GIF *gif = calloc(1, sizeof(*gif) + 2*width*height);
     if (!gif)
         goto no_gif;
     gif->w = width; gif->h = height;
-    gif->depth = depth > 1 ? depth : 2;
     gif->frame = (uint8_t *) &gif[1];
     gif->back = &gif->frame[width*height];
 #ifdef _WIN32
@@ -99,18 +108,30 @@ ge_new_gif(
     write(gif->fd, "GIF89a", 6);
     write_num(gif->fd, width);
     write_num(gif->fd, height);
-    write(gif->fd, (uint8_t []) {0xF0 | (depth-1), 0x00, 0x00}, 3);
+    store_gct = custom_gct = 0;
     if (palette) {
+        if (depth < 0)
+            store_gct = 1;
+        else
+            custom_gct = 1;
+    }
+    if (depth < 0)
+        depth = -depth;
+    gif->depth = depth > 1 ? depth : 2;
+    write(gif->fd, (uint8_t []) {0xF0 | (depth-1), 0x00, 0x00}, 3);
+    if (custom_gct) {
         write(gif->fd, palette, 3 << depth);
     } else if (depth <= 4) {
-        write(gif->fd, vga, 3 << depth);
+        write_and_store(store_gct, palette, gif->fd, vga, 3 << depth);
     } else {
-        write(gif->fd, vga, sizeof(vga));
+        write_and_store(store_gct, palette, gif->fd, vga, sizeof(vga));
         i = 0x10;
         for (r = 0; r < 6; r++) {
             for (g = 0; g < 6; g++) {
                 for (b = 0; b < 6; b++) {
-                    write(gif->fd, (uint8_t []) {r*51, g*51, b*51}, 3);
+                    write_and_store(store_gct, palette, gif->fd,
+                      ((uint8_t []) {r*51, g*51, b*51}), 3
+                    );
                     if (++i == 1 << depth)
                         goto done_gct;
                 }
@@ -118,7 +139,9 @@ ge_new_gif(
         }
         for (i = 1; i <= 24; i++) {
             v = i * 0xFF / 25;
-            write(gif->fd, (uint8_t []) {v, v, v}, 3);
+            write_and_store(store_gct, palette, gif->fd,
+              ((uint8_t []) {v, v, v}), 3
+            );
         }
     }
 done_gct:

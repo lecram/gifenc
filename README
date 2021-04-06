@@ -61,6 +61,9 @@ default table is composed  of the 16 standard VGA colors,  plus the 216 web-safe
 colors (all combinations of  RGB with only 6 valid values  per channel), plus 24
 grey colors equally spaced between black and white, excluding both.
 
+If `depth` < 0 and `palette` is not NULL, then the default table with 2 ^ -depth
+colors is used and it is stored in the array at the `palette` address.
+
 If the `loop` parameter is zero, the resulting GIF will loop forever. If it is a
 positive number, the  animation will  be played that number  of times. If `loop`
 is negative,  no looping  information is stored  in the GIF  file (for  most GIF
