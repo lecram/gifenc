@@ -35,7 +35,8 @@ handler:
         const char *fname,                  /* GIF file name */
         uint16_t width, uint16_t height,    /* frame size */
         uint8_t *palette, int depth,        /* color table */
-        int loop                            /* looping information */
+        int loop,                           /* looping information */
+        int transparent_index               /* index of color to make transparent */
     );
 
 The `palette` parameter  must point to an  array of color data. Each  entry is a
@@ -68,6 +69,10 @@ If the `loop` parameter is zero, the resulting GIF will loop forever. If it is a
 positive number, the  animation will  be played that number  of times. If `loop`
 is negative,  no looping  information is stored  in the GIF  file (for  most GIF
 viewers, this is equivalent to `loop` == 1, i.e., "play once").
+
+If the `transparent_index` parameter is != -1 it refers to an index in the
+`palette` to make transparent instead of using the color (it must be within the
+range of the `palette`). If it's -1, no color will be made transparent.
 
 The  ge_add_frame() function  reads  pixel  data from  a  buffer  and saves  the
 resulting frame to the file associated with the given ge_GIF handler:

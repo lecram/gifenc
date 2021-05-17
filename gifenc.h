@@ -10,6 +10,7 @@ extern "C" {
 typedef struct ge_GIF {
     uint16_t w, h;
     int depth;
+    int transparent_index;
     int fd;
     int offset;
     int nframes;
@@ -20,7 +21,7 @@ typedef struct ge_GIF {
 
 ge_GIF *ge_new_gif(
     const char *fname, uint16_t width, uint16_t height,
-    uint8_t *palette, int depth, int loop
+    uint8_t *palette, int depth, int loop, int transparent_index
 );
 void ge_add_frame(ge_GIF *gif, uint16_t delay);
 void ge_close_gif(ge_GIF* gif);
