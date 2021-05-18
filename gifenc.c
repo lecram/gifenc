@@ -84,7 +84,7 @@ static void put_loop(ge_GIF *gif, uint16_t loop);
 ge_GIF *
 ge_new_gif(
     const char *fname, uint16_t width, uint16_t height,
-    uint8_t *palette, int depth, int loop
+    uint8_t *palette, int depth, int loop, int transparent_index
 )
 {
     int i, r, g, b, v;
@@ -93,6 +93,7 @@ ge_new_gif(
     if (!gif)
         goto no_gif;
     gif->w = width; gif->h = height;
+    gif->transparent_index = transparent_index;
     gif->frame = (uint8_t *) &gif[1];
     gif->back = &gif->frame[width*height];
 #ifdef _WIN32
@@ -276,11 +277,18 @@ get_bbox(ge_GIF *gif, uint16_t *w, uint16_t *h, uint16_t *x, uint16_t *y)
 }
 
 static void
-set_delay(ge_GIF *gif, uint16_t d)
+add_graphics_control_extension(ge_GIF *gif, uint16_t d)
 {
-    write(gif->fd, (uint8_t []) {'!', 0xF9, 0x04, 0x04}, 4);
+    uint8_t out[4] = {'!', 0xF9, 0x04, 0x04};
+    if(gif->transparent_index != -1)
+        out[3] |= 0x1;
+    write(gif->fd, out, sizeof(out));
     write_num(gif->fd, d);
-    write(gif->fd, "\0\0", 2);
+    out[0] = 0;
+    out[1] = 0;
+    if(gif->transparent_index != -1)
+        out[0] = gif->transparent_index;
+    write(gif->fd, out, 2);
 }
 
 void
@@ -289,8 +297,8 @@ ge_add_frame(ge_GIF *gif, uint16_t delay)
     uint16_t w, h, x, y;
     uint8_t *tmp;
 
-    if (delay)
-        set_delay(gif, delay);
+    if (delay || (gif->transparent_index != -1))
+        add_graphics_control_extension(gif, delay);
     if (gif->nframes == 0) {
         w = gif->w;
         h = gif->h;
