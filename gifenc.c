@@ -280,8 +280,9 @@ static void
 add_graphics_control_extension(ge_GIF *gif, uint16_t d)
 {
     uint8_t out[4] = {'!', 0xF9, 0x04, 0x04};
-    if(gif->transparent_index != -1)
-        out[3] |= 0x1;
+    if(gif->transparent_index != -1) {
+        out[3] = 0x8 | 0x1; // RTB and transparent color flag
+    }
     write(gif->fd, out, sizeof(out));
     write_num(gif->fd, d);
     out[0] = 0;
@@ -299,7 +300,7 @@ ge_add_frame(ge_GIF *gif, uint16_t delay)
 
     if (delay || (gif->transparent_index != -1))
         add_graphics_control_extension(gif, delay);
-    if (gif->nframes == 0) {
+    if ((gif->nframes == 0) || (gif->transparent_index != -1)) {
         w = gif->w;
         h = gif->h;
         x = y = 0;
