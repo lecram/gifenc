@@ -2,6 +2,7 @@
 #define GIFENC_H
 
 #include <stdint.h>
+#include <stdbool.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -16,6 +17,13 @@ typedef struct ge_GIF {
     int nframes;
     uint8_t *frame, *back;
     uint32_t partial;
+
+    /* transparency only */
+    bool has_unencoded_frame;
+    uint16_t unencoded_delay;
+    uint16_t unencoded_x,unencoded_y, unencoded_w, unencoded_h;
+
+
     uint8_t buffer[0xFF];
 } ge_GIF;
 
