@@ -17,6 +17,7 @@ main()
             0x00, 0x00, 0xFF, /* 3 -> blue */
         },
         2,              /* palette depth == log2(# of colors) */
+        -1,             /* no transparency */
         0               /* infinite loop */
     );
     /* draw some frames */
