@@ -84,15 +84,17 @@ static void put_loop(ge_GIF *gif, uint16_t loop);
 ge_GIF *
 ge_new_gif(
     const char *fname, uint16_t width, uint16_t height,
-    uint8_t *palette, int depth, int loop
+    uint8_t *palette, int depth, int bgindex, int loop
 )
 {
     int i, r, g, b, v;
     int store_gct, custom_gct;
-    ge_GIF *gif = calloc(1, sizeof(*gif) + 2*width*height);
+    int nbuffers = bgindex < 0 ? 2 : 1;
+    ge_GIF *gif = calloc(1, sizeof(*gif) + nbuffers*width*height);
     if (!gif)
         goto no_gif;
     gif->w = width; gif->h = height;
+    gif->bgindex = bgindex;
     gif->frame = (uint8_t *) &gif[1];
     gif->back = &gif->frame[width*height];
 #ifdef _WIN32
@@ -118,7 +120,7 @@ ge_new_gif(
     if (depth < 0)
         depth = -depth;
     gif->depth = depth > 1 ? depth : 2;
-    write(gif->fd, (uint8_t []) {0xF0 | (depth-1), 0x00, 0x00}, 3);
+    write(gif->fd, (uint8_t []) {0xF0 | (depth-1), (uint8_t) bgindex, 0x00}, 3);
     if (custom_gct) {
         write(gif->fd, palette, 3 << depth);
     } else if (depth <= 4) {
@@ -252,12 +254,14 @@ get_bbox(ge_GIF *gif, uint16_t *w, uint16_t *h, uint16_t *x, uint16_t *y)
 {
     int i, j, k;
     int left, right, top, bottom;
+    uint8_t back;
     left = gif->w; right = 0;
     top = gif->h; bottom = 0;
     k = 0;
     for (i = 0; i < gif->h; i++) {
         for (j = 0; j < gif->w; j++, k++) {
-            if (gif->frame[k] != gif->back[k]) {
+            back = gif->bgindex >= 0 ? gif->bgindex : gif->back[k];
+            if (gif->frame[k] != back) {
                 if (j < left)   left    = j;
                 if (j > right)  right   = j;
                 if (i < top)    top     = i;
@@ -278,9 +282,10 @@ get_bbox(ge_GIF *gif, uint16_t *w, uint16_t *h, uint16_t *x, uint16_t *y)
 static void
 set_delay(ge_GIF *gif, uint16_t d)
 {
-    write(gif->fd, (uint8_t []) {'!', 0xF9, 0x04, 0x04}, 4);
+    uint8_t flags = ((gif->bgindex >= 0 ? 2 : 1) << 2) + 1;
+    write(gif->fd, (uint8_t []) {'!', 0xF9, 0x04, flags}, 4);
     write_num(gif->fd, d);
-    write(gif->fd, "\0\0", 2);
+    write(gif->fd, (uint8_t []) {(uint8_t) gif->bgindex, 0x00}, 2);
 }
 
 void
@@ -302,9 +307,11 @@ ge_add_frame(ge_GIF *gif, uint16_t delay)
     }
     put_image(gif, w, h, x, y);
     gif->nframes++;
-    tmp = gif->back;
-    gif->back = gif->frame;
-    gif->frame = tmp;
+    if (gif->bgindex < 0) {
+        tmp = gif->back;
+        gif->back = gif->frame;
+        gif->frame = tmp;
+    }
 }
 
 void

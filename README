@@ -9,6 +9,7 @@ Features
   * user-defined palette of any depth from 1 up to 8
   * each frame has its own (user-specified) delay time
   * flexible looping options: no loop, N repetitions, infinite loop
+  * optional transparent background
   * GIF size optimization: only stores frame differences
   * memory efficient: saves frames to file as soon as possible
   * small and portable: less than 300 lines of C99
@@ -35,6 +36,7 @@ handler:
         const char *fname,                  /* GIF file name */
         uint16_t width, uint16_t height,    /* frame size */
         uint8_t *palette, int depth,        /* color table */
+        int bgindex,                        /* transparent color */
         int loop                            /* looping information */
     );
 
@@ -64,6 +66,9 @@ grey colors equally spaced between black and white, excluding both.
 If `depth` < 0 and `palette` is not NULL, then the default table with 2 ^ -depth
 colors is used and it is stored in the array at the `palette` address.
 
+The `bgindex`  parameter specifies the  color number  to be used  as transparent
+background. If `bgindex` < 0, then transparency is disabled.
+
 If the `loop` parameter is zero, the resulting GIF will loop forever. If it is a
 positive number, the  animation will  be played that number  of times. If `loop`
 is negative,  no looping  information is stored  in the GIF  file (for  most GIF
@@ -85,11 +90,14 @@ Pixel data is read from `gif->frame`, which points to a memory block like this:
 
     uint8_t _frame_[gif->width * gif->height];
 
-Note that  the address of  `gif->frame` changes between calls  to ge_add_frame()
-(*). For this reason, each frame must  be written in its entirety to the current
-address, even if one only wants to change  a few pixels from the last frame. The
-encoder will automatically detect the  difference between two consecutive frames
-in order to minimize the size of the output.
+Note that,  iif transparency  is disabled, the  address of  `gif->frame` changes
+between calls to ge_add_frame() (*). For this reason, each frame must be written
+in its entirety to  the current address, even if one only wants  to change a few
+pixels from the last frame. The encoder will automatically detect the difference
+between two consecutive frames in order to minimize the size of the output. This
+optimization is not applied when `gif->bgindex` >= 0, in which case it's safe to
+reuse `gif->frame`'s  address and content.  Transparent GIFs are  still slightly
+optimized by encoding only the rectangular region containing all opaque pixels.
 
 Each byte in the frame buffer represents a  pixel. The value of each pixel is an
 index to a palette entry. For instance, given the example  palette above, we can
