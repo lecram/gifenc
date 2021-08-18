@@ -280,7 +280,7 @@ get_bbox(ge_GIF *gif, uint16_t *w, uint16_t *h, uint16_t *x, uint16_t *y)
 }
 
 static void
-set_delay(ge_GIF *gif, uint16_t d)
+add_graphics_control_extension(ge_GIF *gif, uint16_t d)
 {
     uint8_t flags = ((gif->bgindex >= 0 ? 2 : 1) << 2) + 1;
     write(gif->fd, (uint8_t []) {'!', 0xF9, 0x04, flags}, 4);
@@ -294,8 +294,8 @@ ge_add_frame(ge_GIF *gif, uint16_t delay)
     uint16_t w, h, x, y;
     uint8_t *tmp;
 
-    if (delay)
-        set_delay(gif, delay);
+    if (delay || (gif->bgindex >= 0))
+        add_graphics_control_extension(gif, delay);
     if (gif->nframes == 0) {
         w = gif->w;
         h = gif->h;
