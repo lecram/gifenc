@@ -26,7 +26,7 @@ Limitations
 Documentation
 -------------
 
-There   are  only   three  functions   declared  in   "gifenc.h":  ge_new_gif(),
+There   are  only   four  functions   declared  in   "gifenc.h":  ge_new_gif(),
 ge_add_frame() and ge_close_gif().
 
 The  ge_new_gif() function  receives GIF  global  options and  returns a  ge_GIF
@@ -73,6 +73,21 @@ If the `loop` parameter is zero, the resulting GIF will loop forever. If it is a
 positive number, the  animation will  be played that number  of times. If `loop`
 is negative,  no looping  information is stored  in the GIF  file (for  most GIF
 viewers, this is equivalent to `loop` == 1, i.e., "play once").
+
+There is another function called ge_new_gif_filestream, which takes a FILE* 
+instead of a string for the file name, in case you want to write the output to 
+something that isn't an actual file (e.g. an fmemopen buffer). The behaviour is 
+otherwise identical to that of ge_new_gif.
+
+    ge_GIF *ge_new_gif_filestream(
+        const char *fname,                  /* GIF file name */
+        uint16_t width, uint16_t height,    /* frame size */
+        uint8_t *palette, int depth,        /* color table */
+        int bgindex,                        /* transparent color */
+        int loop                            /* looping information */
+    );
+
+
 
 The  ge_add_frame() function  reads  pixel  data from  a  buffer  and saves  the
 resulting frame to the file associated with the given ge_GIF handler:
@@ -121,9 +136,9 @@ The function  ge_close_gif() finishes writting  GIF data to the  file associated
 with the  given ge_GIF handler and  does memory clean-up. This  function must be
 called once after all desired frames have been added, in order to correctly save
 the GIF  file. After calling  this function, the  ge_GIF handler cannot  be used
-anymore.
+anymore. ge_close_gif() returns the total size in bytes of the written gif file.
 
-    void ge_close_gif(ge_GIF* gif);
+    size_t ge_close_gif(ge_GIF* gif);
 
 (*) The  encoder keeps two frame  buffers internally, in order  to implement the
 size  optimization. The  address of  `gif->frame` alternates  between those  two
