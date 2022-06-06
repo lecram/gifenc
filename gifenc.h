@@ -2,6 +2,7 @@
 #define GIFENC_H
 
 #include <stdint.h>
+#include <stdio.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -11,7 +12,7 @@ typedef struct ge_GIF {
     uint16_t w, h;
     int depth;
     int bgindex;
-    int fd;
+    FILE* file;
     int offset;
     int nframes;
     uint8_t *frame, *back;
