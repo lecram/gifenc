@@ -73,9 +73,19 @@ do { \
 
 static void put_loop(ge_GIF *gif, uint16_t loop);
 
+
 ge_GIF *
 ge_new_gif(
     const char *fname, uint16_t width, uint16_t height,
+    uint8_t *palette, int depth, int bgindex, int loop
+    )
+{
+    return ge_new_gif_filestream(fopen(fname, "wb"), width, height, palette, depth, bgindex, loop);
+}
+
+ge_GIF *
+ge_new_gif_filestream(
+    FILE * file, uint16_t width, uint16_t height,
     uint8_t *palette, int depth, int bgindex, int loop
 )
 {
@@ -89,7 +99,7 @@ ge_new_gif(
     gif->bgindex = bgindex;
     gif->frame = (uint8_t *) &gif[1];
     gif->back = &gif->frame[width*height];
-    gif->file = fopen(fname, "wb");
+    gif->file = file;
     if (!gif->file)
         goto no_fd;
     fwrite("GIF89a", 1, 6, gif->file);
@@ -299,10 +309,12 @@ ge_add_frame(ge_GIF *gif, uint16_t delay)
     }
 }
 
-void
+size_t
 ge_close_gif(ge_GIF* gif)
 {
     fwrite(";", 1, 1, gif->file);
+    size_t sz = ftell(gif->file);
     fclose(gif->file);
     free(gif);
+    return sz;
 }
